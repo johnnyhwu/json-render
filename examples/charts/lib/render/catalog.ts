@@ -162,6 +162,195 @@ export const catalog = defineCatalog(schema, {
         "Scatter or bubble chart for the relationship between two measures.",
     },
 
+    // -----------------------------------------------------------------------
+    // Advanced charts. Same contract: the agent names fields and options,
+    // the component does all statistics, layout, and styling.
+    // -----------------------------------------------------------------------
+
+    ComboChart: {
+      props: z.object({
+        data: rows,
+        x: z.string().describe("Ordered field such as month."),
+        bars: z
+          .array(
+            z.object({
+              field: z.string(),
+              label: z.string().nullable(),
+              aggregate,
+            }),
+          )
+          .describe("Bar series on the left axis."),
+        lines: z
+          .array(
+            z.object({
+              field: z.string(),
+              label: z.string().nullable(),
+              aggregate,
+              per: z
+                .string()
+                .nullable()
+                .describe(
+                  "Divide the aggregated field by this aggregated field (e.g. revenue per orders = average order value).",
+                ),
+            }),
+          )
+          .describe("Line series on the right axis."),
+        leftFormat: format,
+        rightFormat: format,
+        referenceLines: z
+          .array(
+            z.object({
+              value: z.number(),
+              label: z.string(),
+              axis: z.enum(["left", "right"]),
+            }),
+          )
+          .nullable()
+          .describe("Horizontal target or threshold lines."),
+        brush: z
+          .boolean()
+          .nullable()
+          .describe("Show a range slider under the chart for zooming."),
+        height: z.number().nullable(),
+        filters,
+      }),
+      description:
+        "Dual-axis chart: bars on the left axis and lines (including ratios) on the right, with optional target lines and a zoom brush.",
+    },
+
+    Heatmap: {
+      props: z.object({
+        data: rows,
+        x: z.string(),
+        y: z.string(),
+        value: z.string(),
+        aggregate,
+        format,
+        normalize: z
+          .enum(["none", "row", "column"])
+          .nullable()
+          .describe(
+            "Color scale: none = whole grid, row = each row on its own scale (good for seasonality).",
+          ),
+        selectedX: selected,
+        selectedY: selected,
+        filters,
+      }),
+      events: ["select"],
+      description:
+        "Matrix of x by y colored by an aggregated value, with row and column totals. Clicking a cell sets both selections.",
+    },
+
+    Treemap: {
+      props: z.object({
+        data: rows,
+        levels: z
+          .array(z.string())
+          .describe("Hierarchy, outermost first, e.g. ['region', 'product']."),
+        value: z.string(),
+        aggregate,
+        format,
+        height: z.number().nullable(),
+        filters,
+      }),
+      description:
+        "Nested rectangles sized by value. Click a group to drill down, use the breadcrumb to go back up.",
+    },
+
+    Sankey: {
+      props: z.object({
+        data: rows,
+        path: z
+          .array(z.string())
+          .describe(
+            "Fields that define the flow stages, e.g. ['channel', 'region', 'product'].",
+          ),
+        value: z.string(),
+        aggregate,
+        format,
+        height: z.number().nullable(),
+        filters,
+      }),
+      description:
+        "Flow diagram showing how a value splits across successive dimensions.",
+    },
+
+    Waterfall: {
+      props: z.object({
+        data: rows,
+        x: z.string().describe("Step label field."),
+        y: z
+          .string()
+          .describe(
+            "Signed change per step. The first row is the starting total.",
+          ),
+        totalLabel: z.string().describe("Label for the computed ending total."),
+        format,
+        height: z.number().nullable(),
+      }),
+      description:
+        "Bridge chart from a starting value through positive and negative changes to a computed total.",
+    },
+
+    BoxPlot: {
+      props: z.object({
+        data: rows,
+        category: z.string(),
+        value: z.string(),
+        format,
+        showPoints: z
+          .boolean()
+          .nullable()
+          .describe("Overlay individual observations as jittered dots."),
+        unit: z
+          .string()
+          .nullable()
+          .describe("Unit suffix for the axis, e.g. 'days'."),
+        filters,
+      }),
+      description:
+        "Distribution per category: median, quartiles, 1.5 IQR whiskers, outliers, and mean. Hover a row for exact statistics.",
+    },
+
+    RadarChart: {
+      props: z.object({
+        data: rows,
+        seriesBy: z.string().describe("One polygon per value of this field."),
+        metrics: z.array(
+          z.object({
+            field: z.string(),
+            label: z.string(),
+            aggregate,
+            invert: z
+              .boolean()
+              .nullable()
+              .describe(
+                "Lower is better (e.g. cycle time), so invert the score.",
+              ),
+            format,
+          }),
+        ),
+        height: z.number().nullable(),
+        filters,
+      }),
+      description:
+        "Compare groups across several metrics. Each metric is scaled 0-100 relative to the best group; tooltips show raw values.",
+    },
+
+    Funnel: {
+      props: z.object({
+        data: rows,
+        stage: z.string(),
+        value: z.string(),
+        stages: z.array(z.string()).describe("Stage order, top to bottom."),
+        aggregate,
+        format,
+        filters,
+      }),
+      description:
+        "Conversion funnel with step and overall conversion rates and the biggest drop-off highlighted.",
+    },
+
     FilterBar: {
       props: z.object({
         filters: z.array(

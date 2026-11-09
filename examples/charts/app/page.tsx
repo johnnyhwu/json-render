@@ -5,7 +5,7 @@ import { JSONUIProvider, Renderer, useStateValue } from "@json-render/react";
 import type { Spec } from "@json-render/core";
 import { registry } from "@/lib/render/registry";
 import { examples } from "@/lib/specs";
-import { accounts, sales } from "@/lib/data";
+import { accounts, bridge, deals, funnel, sales } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 /** Order elements parent-first so a replay looks like a real model stream. */
@@ -78,7 +78,10 @@ export default function Page() {
 
   // Data comes from the host (e.g. a tool result), not from the model.
   const initialState = useMemo(
-    () => ({ ...(example.spec.state ?? {}), data: { sales, accounts } }),
+    () => ({
+      ...(example.spec.state ?? {}),
+      data: { sales, accounts, deals, funnel, bridge },
+    }),
     [example],
   );
 

@@ -155,3 +155,123 @@ export const accounts: AccountRow[] = ACCOUNT_NAMES.map((account, i) => {
     nps: Math.round(10 + rand() * 70),
   };
 });
+
+// ---------------------------------------------------------------------------
+// Deals: one row per opportunity. Used for distributions and radar profiles.
+// ---------------------------------------------------------------------------
+
+const dealSize: Record<string, number> = {
+  Starter: 1800,
+  Team: 7500,
+  Pro: 22000,
+  Enterprise: 95000,
+};
+const dealCycle: Record<string, number> = {
+  Starter: 9,
+  Team: 21,
+  Pro: 38,
+  Enterprise: 84,
+};
+const regionWinRate: Record<string, number> = {
+  "North America": 0.34,
+  Europe: 0.29,
+  "Asia Pacific": 0.25,
+  "Latin America": 0.21,
+};
+
+/** Skewed noise: mostly near 1, with a long right tail. */
+function skew() {
+  const u = rand();
+  return 0.45 + u * u * u * 2.4 + rand() * 0.35;
+}
+
+export type DealRow = {
+  deal: string;
+  month: string;
+  region: string;
+  channel: string;
+  product: string;
+  amount: number;
+  cycleDays: number;
+  discount: number;
+  won: number;
+};
+
+export const deals: DealRow[] = Array.from({ length: 640 }, (_, i) => {
+  const product = PRODUCTS[Math.floor(rand() * rand() * PRODUCTS.length)]!;
+  const region =
+    REGIONS[
+      Math.floor(rand() * rand() * 1.3 * REGIONS.length) % REGIONS.length
+    ]!;
+  const channel = CHANNELS[Math.floor(rand() * CHANNELS.length)]!;
+  const discount = Math.round(rand() * rand() * 30);
+  return {
+    deal: `D-${1000 + i}`,
+    month: MONTHS[Math.floor(rand() * MONTHS.length)]!,
+    region,
+    channel,
+    product,
+    amount: Math.round(dealSize[product]! * skew() * (1 - discount / 100)),
+    cycleDays: Math.max(2, Math.round(dealCycle[product]! * skew())),
+    discount,
+    won:
+      rand() < regionWinRate[region]! + (channel === "Partner" ? 0.06 : 0)
+        ? 1
+        : 0,
+  };
+});
+
+// ---------------------------------------------------------------------------
+// Funnel: visitors through to paid customers, per channel and region.
+// ---------------------------------------------------------------------------
+
+export const FUNNEL_STAGES = [
+  "Visitors",
+  "Sign-ups",
+  "Activated",
+  "Trials",
+  "Paid",
+];
+const stageRate: Record<string, number[]> = {
+  Online: [1, 0.12, 0.62, 0.41, 0.33],
+  Retail: [1, 0.07, 0.71, 0.48, 0.42],
+  Partner: [1, 0.18, 0.66, 0.55, 0.47],
+};
+const channelTraffic: Record<string, number> = {
+  Online: 120000,
+  Retail: 38000,
+  Partner: 21000,
+};
+
+export type FunnelRow = {
+  stage: string;
+  channel: string;
+  region: string;
+  count: number;
+};
+
+export const funnel: FunnelRow[] = [];
+for (const channel of CHANNELS) {
+  for (const region of REGIONS) {
+    let n =
+      channelTraffic[channel]! * regionWeight[region]! * (0.9 + rand() * 0.2);
+    FUNNEL_STAGES.forEach((stage, i) => {
+      n *= stageRate[channel]![i]! * (0.93 + rand() * 0.14);
+      funnel.push({ stage, channel, region, count: Math.round(n) });
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Revenue bridge: Q3 ARR to Q4 ARR.
+// ---------------------------------------------------------------------------
+
+export const bridge = [
+  { step: "Q3 ARR", value: 4_820_000 },
+  { step: "New logos", value: 1_140_000 },
+  { step: "Expansion", value: 620_000 },
+  { step: "Price uplift", value: 210_000 },
+  { step: "Contraction", value: -340_000 },
+  { step: "Churn", value: -520_000 },
+  { step: "FX", value: -95_000 },
+];

@@ -9,6 +9,7 @@ This example shows an alternative to having an agent write raw charting-library 
 - **Fixed visual language**: colors, typography, tooltips, legends, number formatting, animation, and dark mode live in the components. Specs contain no styling, so every chart looks consistent.
 - **Small specs**: a full dashboard is about 4 KB of JSON. Data rows are not in the spec; charts reference them with `{ "$state": "/data/sales" }`, and the host app fills that state from a tool result.
 - **Cross-filtering**: a `FilterBar`, bar clicks, and donut slice clicks all write to `/filters/*` state. Every chart reads those paths through its `filters` prop. Clickable charts bind `selected` with `{ "$bindState": "/filters/region" }`.
+- **Statistics in the component, not the prompt**: quartiles, ratios, normalization, flow links, and running totals are computed by the components. The agent only names fields, for example `{ "type": "BoxPlot", "props": { "category": "product", "value": "cycleDays" } }`.
 - **Streaming**: "Replay as stream" reveals elements one by one, as they would arrive from a model.
 
 ## Components
@@ -25,6 +26,14 @@ This example shows an alternative to having an agent write raw charting-library 
     <tr><td><code>ScatterChart</code></td><td>Two measures, optional bubble size and series color</td></tr>
     <tr><td><code>FilterBar</code></td><td>Pill-style filters that write to state paths</td></tr>
     <tr><td><code>ChartCard</code></td><td>Title and description frame around one chart</td></tr>
+    <tr><td><code>ComboChart</code></td><td>Dual axis: bars plus lines or ratios (e.g. revenue per order), target lines, zoom brush</td></tr>
+    <tr><td><code>Heatmap</code></td><td>x by y matrix with row and column totals, per-row or per-column scaling, two-dimensional click-to-filter</td></tr>
+    <tr><td><code>Treemap</code></td><td>Nested hierarchy sized by value, with drill-down and breadcrumb</td></tr>
+    <tr><td><code>Sankey</code></td><td>Flow across successive dimensions (e.g. channel to region to product)</td></tr>
+    <tr><td><code>Waterfall</code></td><td>Bridge from a starting total through signed changes to a computed total</td></tr>
+    <tr><td><code>BoxPlot</code></td><td>Median, quartiles, 1.5 IQR whiskers, outliers, mean, optional jittered points, hover statistics</td></tr>
+    <tr><td><code>RadarChart</code></td><td>Groups compared across metrics, each scaled to the best group, with inverted lower-is-better metrics</td></tr>
+    <tr><td><code>Funnel</code></td><td>Stage conversion rates with the biggest drop-off highlighted</td></tr>
   </tbody>
 </table>
 
